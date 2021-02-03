@@ -2,4 +2,5 @@
 
 ## notes
 
-- renamed field to camel case
+- fulltext search
+- no table
