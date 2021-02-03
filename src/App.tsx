@@ -1,17 +1,9 @@
-import { City, fetchCities } from 'modules';
-import { CitiesPage, ErrorPage } from 'pages';
-import { FC, useEffect, useState } from 'react';
+import { StylesProvider } from '@material-ui/core';
+import { IndexPage } from 'pages';
+import { FC } from 'react';
 
-export const App: FC = () => {
-  const [cities, setCities] = useState<City[] | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    fetchCities.then(setCities).catch(setError);
-  }, []);
-
-  if (error) return <ErrorPage error={error} />;
-  if (cities) return <CitiesPage cities={cities} />;
-
-  return null;
-};
+export const App: FC = () => (
+  <StylesProvider injectFirst>
+    <IndexPage />
+  </StylesProvider>
+);
