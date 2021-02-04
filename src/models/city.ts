@@ -60,7 +60,7 @@ const normalizeCities = (
   return { cities, provinces };
 };
 
-export const fetchCities = fetch('/data.json')
+export const fetchCities = fetch(`${process.env.PUBLIC_URL}/data.json`)
   .then((response) => {
     if (!response.ok) throw new Error(response.statusText);
 
