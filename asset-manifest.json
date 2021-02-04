@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/hatch-test/static/css/main.db5a0b63.chunk.css",
-    "main.js": "/hatch-test/static/js/main.f7a9e484.chunk.js",
-    "main.js.map": "/hatch-test/static/js/main.f7a9e484.chunk.js.map",
+    "main.js": "/hatch-test/static/js/main.7c0b6b8f.chunk.js",
+    "main.js.map": "/hatch-test/static/js/main.7c0b6b8f.chunk.js.map",
     "runtime-main.js": "/hatch-test/static/js/runtime-main.76635a7e.js",
     "runtime-main.js.map": "/hatch-test/static/js/runtime-main.76635a7e.js.map",
     "static/js/2.9e49d226.chunk.js": "/hatch-test/static/js/2.9e49d226.chunk.js",
@@ -15,6 +15,6 @@
     "static/js/runtime-main.76635a7e.js",
     "static/js/2.9e49d226.chunk.js",
     "static/css/main.db5a0b63.chunk.css",
-    "static/js/main.f7a9e484.chunk.js"
+    "static/js/main.7c0b6b8f.chunk.js"
   ]
 }
