@@ -16,7 +16,8 @@ export interface City {
   name: string;
   provinceId: number | null;
   population: number | null;
-  lngLat: [number, number];
+  latLng: [number, number];
+  distance: number;
 }
 
 const collator = new Intl.Collator('en');
@@ -48,7 +49,8 @@ const normalizeCities = (
         name: city,
         provinceId: admin_name ? provincesByName[admin_name] || null : null,
         population: population ? Number(population) : null,
-        lngLat: [Number(lng), Number(lat)],
+        latLng: [Number(lat), Number(lng)],
+        distance: -1,
       });
     },
   );

@@ -4,6 +4,7 @@ import styles from './Table.module.css';
 const screenSize = Math.max(window.screen.width, window.screen.height);
 
 export const Table = <Row,>({
+  className,
   headerHeight,
   rowHeight,
   header,
@@ -11,6 +12,7 @@ export const Table = <Row,>({
   getRowKey,
   renderRow,
 }: {
+  className?: string;
   headerHeight: number;
   rowHeight: number;
   header: ReactNode;
@@ -51,7 +53,7 @@ export const Table = <Row,>({
 
   return (
     <div
-      className={styles.table}
+      className={`${styles.table} ${className || ''}`}
       onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
     >
       {header}

@@ -16,6 +16,10 @@
   overflow-x: auto;
 }
 
+.table {
+  min-width: 640px;
+}
+
 .tableHead {
   display: flex;
   position: sticky;

@@ -3,7 +3,7 @@ import {
   InputAdornment,
   MenuItem,
   Paper,
-  TableCell as MaterialTableCell,
+  TableCell,
   TableHead,
   TableSortLabel,
   TextField,
@@ -13,30 +13,21 @@ import {
 import { Search } from '@material-ui/icons';
 import { Table } from 'components';
 import { City, Province } from 'models';
-import { FC, ReactNode, useMemo, useState } from 'react';
+import { FC, ReactNode, useEffect, useMemo, useState } from 'react';
 import styles from './CitiesPage.module.css';
 
-type SortComparatorName = 'strings' | 'numbers';
+type SortComparatorName = 'name' | 'distance' | 'population';
 
 type SortDirection = 'asc' | 'desc';
 
 interface Column {
   title: string;
   renderCell: (city: City) => ReactNode;
+  align?: 'left' | 'right';
   width: string;
   comparator?: SortComparatorName;
   input?: ReactNode;
 }
-
-const TableHeadCell: FC<{ width: string }> = ({ children, width }) => (
-  <MaterialTableCell
-    component="div"
-    className={styles.tableHeadCell}
-    style={{ width }}
-  >
-    {children}
-  </MaterialTableCell>
-);
 
 const inputProps: TextFieldProps = {
   variant: 'outlined',
@@ -47,16 +38,54 @@ const inputProps: TextFieldProps = {
 const collator = new Intl.Collator('en');
 
 const comparators: Record<SortComparatorName, (a: City, b: City) => number> = {
-  strings: (a, b) => collator.compare(a.name, b.name),
-  numbers: (a, b) => (a.population || 0) - (b.population || 0),
+  name: (a, b) => collator.compare(a.name, b.name),
+  distance: (a, b) => a.distance - b.distance,
+  population: (a, b) => (a.population || 0) - (b.population || 0),
+};
+
+const populationFormatter = new Intl.NumberFormat('en');
+
+// Source: https://www.movable-type.co.uk/scripts/latlong.html
+const getDistance = (
+  [lat1, lng1]: [number, number],
+  [lat2, lng2]: [number, number],
+): number => {
+  const lat1Rad = (lat1 * Math.PI) / 180;
+  const lat2Rad = (lat2 * Math.PI) / 180;
+
+  const deltaLat = ((lat2 - lat1) * Math.PI) / 180;
+  const deltaLng = ((lng2 - lng1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+    Math.cos(lat1Rad) *
+      Math.cos(lat2Rad) *
+      Math.sin(deltaLng / 2) *
+      Math.sin(deltaLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return c * 6371;
 };
 
 export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
-  cities,
+  cities: citiesProp,
   provinces,
 }) => {
   const [cityNameFilter, setCityNameFilter] = useState('');
   const [provinceFilter, setProvinceFilter] = useState(0);
+  const [location, setLocation] = useState<[number, number] | null>(null);
+
+  const cities = useMemo(
+    () =>
+      location
+        ? citiesProp.map((city) => ({
+            ...city,
+            distance: getDistance(location, city.latLng),
+          }))
+        : citiesProp,
+    [citiesProp, location],
+  );
 
   const [sortMode, setSortMode] = useState<{
     column: number;
@@ -73,11 +102,24 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
     return provincesById;
   }, [provinces]);
 
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) =>
+        setLocation([position.coords.latitude, position.coords.longitude]),
+      undefined,
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      },
+    );
+  }, []);
+
   const columns: Column[] = [
     {
       title: 'Name',
       width: '30%',
-      comparator: 'strings',
+      comparator: 'name',
       renderCell: (city) => city.name,
       input: (
         <TextField
@@ -120,13 +162,22 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
     {
       title: 'Population',
       width: '20%',
-      comparator: 'numbers',
-      renderCell: (city) => city.population,
+      align: 'right',
+      comparator: 'population',
+      renderCell: (city) =>
+        city.population === null
+          ? null
+          : populationFormatter.format(city.population),
     },
     {
-      title: 'Coord',
+      title: location ? 'Distance' : 'Coordinates',
       width: '20%',
-      renderCell: (city) => `${city.lngLat[0]}, ${city.lngLat[1]}`,
+      align: 'right',
+      comparator: location ? 'distance' : undefined,
+      renderCell: (city) =>
+        location
+          ? `${Math.floor(city.distance)} km`
+          : `${city.latLng[0].toFixed(3)}, ${city.latLng[1].toFixed(3)}`,
     },
   ];
 
@@ -169,47 +220,61 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
         </div>
         <div className={styles.tableContainer}>
           <Table
+            className={styles.table}
             headerHeight={105}
             rowHeight={50}
             header={
               <TableHead component="div" className={styles.tableHead}>
-                {columns.map(({ title, input, width, comparator }, i) => (
-                  <TableHeadCell key={title} width={width}>
-                    {comparator ? (
-                      <TableSortLabel
-                        active={sortMode.column === i}
-                        direction={
-                          sortMode.column === i ? sortMode.direction : 'asc'
-                        }
-                        onClick={() => {
-                          setSortMode({
-                            column: i,
-                            direction:
-                              sortMode.column === i &&
-                              sortMode.direction === 'asc'
-                                ? 'desc'
-                                : 'asc',
-                          });
-                        }}
-                      >
-                        {title}
-                      </TableSortLabel>
-                    ) : (
-                      title
-                    )}
-                    {input}
-                  </TableHeadCell>
-                ))}
+                {columns.map(
+                  ({ title, input, align, width, comparator }, i) => (
+                    <TableCell
+                      key={title}
+                      component="div"
+                      className={styles.tableHeadCell}
+                      align={align}
+                      style={{ width }}
+                    >
+                      {comparator ? (
+                        <TableSortLabel
+                          active={sortMode.column === i}
+                          direction={
+                            sortMode.column === i ? sortMode.direction : 'asc'
+                          }
+                          onClick={() => {
+                            setSortMode({
+                              column: i,
+                              direction:
+                                sortMode.column === i &&
+                                sortMode.direction === 'asc'
+                                  ? 'desc'
+                                  : 'asc',
+                            });
+                          }}
+                        >
+                          {title}
+                        </TableSortLabel>
+                      ) : (
+                        title
+                      )}
+
+                      {input}
+                    </TableCell>
+                  ),
+                )}
               </TableHead>
             }
             rows={sorderRows}
             getRowKey={(city) => city.id}
             renderRow={(city) => (
               <>
-                {columns.map(({ title, renderCell, width }) => (
+                {columns.map(({ title, renderCell, align, width }) => (
                   <div
                     key={title}
-                    style={{ width }}
+                    style={{
+                      width,
+                      justifyContent:
+                        align === 'right' ? 'flex-end' : undefined,
+                    }}
                     className={styles.tableCell}
                   >
                     {renderCell(city)}
