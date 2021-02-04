@@ -28,7 +28,7 @@ export const Table = <Row,>({
   );
 
   const rowsToRender = Math.ceil(screenSize / rowHeight);
-  const tableHeight = rowHeight * rows.length;
+  const tableHeight = headerHeight + rowHeight * rows.length + 16;
 
   const rowNodes: ReactNode[] = [];
 
@@ -43,7 +43,7 @@ export const Table = <Row,>({
       <div
         color={String(i)}
         key={getRowKey(row)}
-        className={styles.tableRow}
+        className={styles.row}
         style={{ top: rowHeight * i + headerHeight, height: rowHeight }}
       >
         {renderRow(row)}
@@ -56,8 +56,10 @@ export const Table = <Row,>({
       className={`${styles.table} ${className || ''}`}
       onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
     >
-      {header}
-      <div style={{ height: tableHeight }}>{rowNodes}</div>
+      <div style={{ height: tableHeight }}>
+        <div className={styles.header}>{header}</div>
+        {rowNodes}
+      </div>
     </div>
   );
 };

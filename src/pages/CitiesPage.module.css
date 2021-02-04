@@ -1,5 +1,5 @@
 .container {
-  height: 100vh;
+  height: 85vh;
   box-sizing: border-box;
   padding-top: 16px;
   padding-bottom: 16px;
@@ -22,10 +22,6 @@
 
 .tableHead {
   display: flex;
-  position: sticky;
-  top: 0;
-  background-color: white;
-  z-index: 1;
 }
 
 .tableHeadCell {
