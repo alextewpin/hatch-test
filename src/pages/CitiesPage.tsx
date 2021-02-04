@@ -16,16 +16,15 @@ import { City, Province } from 'models';
 import { FC, ReactNode, useMemo, useState } from 'react';
 import styles from './CitiesPage.module.css';
 
-interface SortProps {
-  direction: 'asc' | 'desc';
-  active: boolean;
-}
+type SortComparatorName = 'strings' | 'numbers';
+
+type SortDirection = 'asc' | 'desc';
 
 interface Column {
   title: string;
   renderCell: (city: City) => ReactNode;
   width: string;
-  sortProps?: SortProps;
+  comparator?: SortComparatorName;
   input?: ReactNode;
 }
 
@@ -45,12 +44,24 @@ const inputProps: TextFieldProps = {
   className: styles.input,
 };
 
+const collator = new Intl.Collator('en');
+
+const comparators: Record<SortComparatorName, (a: City, b: City) => number> = {
+  strings: (a, b) => collator.compare(a.name, b.name),
+  numbers: (a, b) => (a.population || 0) - (b.population || 0),
+};
+
 export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
   cities,
   provinces,
 }) => {
   const [cityNameFilter, setCityNameFilter] = useState('');
   const [provinceFilter, setProvinceFilter] = useState(0);
+
+  const [sortMode, setSortMode] = useState<{
+    column: number;
+    direction: SortDirection;
+  }>({ column: 0, direction: 'asc' });
 
   const provincesById: Record<number, Province> = useMemo(() => {
     const provincesById: Record<number, Province> = {};
@@ -62,12 +73,11 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
     return provincesById;
   }, [provinces]);
 
-  console.log(provinces);
-
   const columns: Column[] = [
     {
       title: 'Name',
       width: '30%',
+      comparator: 'strings',
       renderCell: (city) => city.name,
       input: (
         <TextField
@@ -110,6 +120,7 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
     {
       title: 'Population',
       width: '20%',
+      comparator: 'numbers',
       renderCell: (city) => city.population,
     },
     {
@@ -119,11 +130,36 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
     },
   ];
 
-  const rows = useMemo(
+  const rowsWithProvinceFilter = useMemo(
     () =>
-      cities.filter((city) => city.name.toLowerCase().includes(cityNameFilter)),
-    [cities, cityNameFilter],
+      provinceFilter
+        ? cities.filter((city) => city.provinceId === provinceFilter)
+        : cities,
+    [cities, provinceFilter],
   );
+
+  const rowsWithCityNameFilter = useMemo(
+    () =>
+      cityNameFilter
+        ? rowsWithProvinceFilter.filter((city) =>
+            city.name.toLowerCase().includes(cityNameFilter),
+          )
+        : rowsWithProvinceFilter,
+    [rowsWithProvinceFilter, cityNameFilter],
+  );
+
+  const comparatorName = columns[sortMode.column].comparator;
+
+  const sorderRows = useMemo(() => {
+    if (!comparatorName) return rowsWithCityNameFilter;
+
+    const rows = [...rowsWithCityNameFilter];
+    const direction = sortMode.direction === 'asc' ? 1 : -1;
+
+    rows.sort((a, b) => comparators[comparatorName](a, b) * direction);
+
+    return rows;
+  }, [rowsWithCityNameFilter, comparatorName, sortMode]);
 
   return (
     <Container className={styles.container}>
@@ -137,10 +173,27 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
             rowHeight={50}
             header={
               <TableHead component="div" className={styles.tableHead}>
-                {columns.map(({ title, sortProps, input, width }) => (
+                {columns.map(({ title, input, width, comparator }, i) => (
                   <TableHeadCell key={title} width={width}>
-                    {sortProps ? (
-                      <TableSortLabel {...sortProps}>{title}</TableSortLabel>
+                    {comparator ? (
+                      <TableSortLabel
+                        active={sortMode.column === i}
+                        direction={
+                          sortMode.column === i ? sortMode.direction : 'asc'
+                        }
+                        onClick={() => {
+                          setSortMode({
+                            column: i,
+                            direction:
+                              sortMode.column === i &&
+                              sortMode.direction === 'asc'
+                                ? 'desc'
+                                : 'asc',
+                          });
+                        }}
+                      >
+                        {title}
+                      </TableSortLabel>
                     ) : (
                       title
                     )}
@@ -149,7 +202,7 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
                 ))}
               </TableHead>
             }
-            rows={rows}
+            rows={sorderRows}
             getRowKey={(city) => city.id}
             renderRow={(city) => (
               <>

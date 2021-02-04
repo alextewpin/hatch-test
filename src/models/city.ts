@@ -19,6 +19,8 @@ export interface City {
   lngLat: [number, number];
 }
 
+const collator = new Intl.Collator('en');
+
 const normalizeCities = (
   denormalizedCities: DenormalizedCity[],
 ): { cities: City[]; provinces: Province[] } => {
@@ -51,7 +53,7 @@ const normalizeCities = (
     },
   );
 
-  provinces.sort((a, b) => a.name.localeCompare(b.name));
+  provinces.sort((a, b) => collator.compare(a.name, b.name));
 
   return { cities, provinces };
 };

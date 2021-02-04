@@ -8,3 +8,4 @@
 - no consern for accessibility / semanthics
 - on performance / direct dom manipution
 - header height
+- strict mode
