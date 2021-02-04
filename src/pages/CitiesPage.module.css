@@ -13,28 +13,28 @@
 
 .tableContainer {
   height: 100%;
-  overflow: auto;
-}
-
-.table {
-  min-width: 600px;
-}
-
-.tableCell {
-  display: block;
-  width: 25%;
-  box-sizing: border-box;
+  overflow-x: auto;
 }
 
 .tableHead {
-  display: block;
+  display: flex;
   position: sticky;
   top: 0;
   background-color: white;
+  z-index: 1;
 }
 
-.tableRow {
+.tableHeadCell {
+  display: block;
+  box-sizing: border-box;
+}
+
+.tableCell {
   display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 16px;
+  font-size: 0.875rem;
 }
 
 .header {

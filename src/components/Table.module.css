@@ -1,0 +1,18 @@
+.table {
+  height: 100%;
+  min-width: 600px;
+  position: relative;
+  overflow-y: scroll;
+  padding-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.tableRow {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(224, 224, 224, 1);
+}
