@@ -74,6 +74,8 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
 }) => {
   const [cityNameFilter, setCityNameFilter] = useState('');
   const [provinceFilter, setProvinceFilter] = useState(0);
+  const [distanceFilter, setDistanceFilter] = useState(0);
+
   const [location, setLocation] = useState<[number, number] | null>(null);
 
   const cities = useMemo(
@@ -109,7 +111,7 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
       undefined,
       {
         enableHighAccuracy: true,
-        timeout: 5000,
+        timeout: 15000,
         maximumAge: 0,
       },
     );
@@ -178,6 +180,21 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
         location
           ? `${Math.floor(city.distance)} km`
           : `${city.latLng[0].toFixed(3)}, ${city.latLng[1].toFixed(3)}`,
+      input: location ? (
+        <TextField
+          {...inputProps}
+          value={distanceFilter}
+          select
+          onChange={(event) => setDistanceFilter(Number(event.target.value))}
+        >
+          <MenuItem value={0}>Any</MenuItem>
+          {[30, 100, 250, 500, 1000].map((distance) => (
+            <MenuItem key={distance} value={distance}>
+              {distance} km
+            </MenuItem>
+          ))}
+        </TextField>
+      ) : null,
     },
   ];
 
@@ -199,18 +216,28 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
     [rowsWithProvinceFilter, cityNameFilter],
   );
 
+  const rowsWithDistanceFilter = useMemo(
+    () =>
+      distanceFilter
+        ? rowsWithCityNameFilter.filter(
+            (city) => city.distance <= distanceFilter,
+          )
+        : rowsWithCityNameFilter,
+    [rowsWithCityNameFilter, distanceFilter],
+  );
+
   const comparatorName = columns[sortMode.column].comparator;
 
   const sorderRows = useMemo(() => {
-    if (!comparatorName) return rowsWithCityNameFilter;
+    if (!comparatorName) return rowsWithDistanceFilter;
 
-    const rows = [...rowsWithCityNameFilter];
+    const rows = [...rowsWithDistanceFilter];
     const direction = sortMode.direction === 'asc' ? 1 : -1;
 
     rows.sort((a, b) => comparators[comparatorName](a, b) * direction);
 
     return rows;
-  }, [rowsWithCityNameFilter, comparatorName, sortMode]);
+  }, [rowsWithDistanceFilter, comparatorName, sortMode]);
 
   return (
     <Container className={styles.container}>

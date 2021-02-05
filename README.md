@@ -14,6 +14,8 @@ React.StrictMode is not used due to issues with Material-UI.
 
 Demo should work fine on any fairly modern browser. I've tested it on Chrome, Safari and Firefox.
 
+Location detection is working fine, but getting it from OS could take quite a long time.
+
 ### Possible Improvements
 
 - Implement indexed text search for large datasets
