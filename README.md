@@ -8,7 +8,7 @@ My virtualized table have 60 FPS performance most of the time. I've tested it on
 
 For styling I usually use styled-components, however styled Material-UI components have some issues with typings, so I've opted for plain CSS. Also, it's way more performant that way.
 
-Table component does not use any Material-UI components due to massive ~5x performance drop from runtime style generation and theme context calls.
+Table component does not use any Material-UI components due to massive ~5x performance drop, probably from runtime style generation.
 
 React.StrictMode is not used due to issues with Material-UI.
 
