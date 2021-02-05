@@ -54,7 +54,9 @@ export const Table = <Row,>({
   return (
     <div
       className={`${styles.table} ${className || ''}`}
-      onScroll={(e) => setScrollTop((e.target as HTMLDivElement).scrollTop)}
+      onScroll={(event) =>
+        setScrollTop((event.target as HTMLDivElement).scrollTop)
+      }
     >
       <div style={{ height: tableHeight }}>
         <div className={styles.header}>{header}</div>

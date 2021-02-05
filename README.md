@@ -23,4 +23,5 @@ Location detection is working fine, but getting it from OS could take quite a lo
 - Use actual table instead of flexbox
 - Improve semanthics and accessibility
 - Automatic header height calculation
+- Smarter rowsToRender calculation
 - Resolve 100% height issue on iOS
