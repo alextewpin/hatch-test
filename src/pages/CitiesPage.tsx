@@ -228,7 +228,7 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
 
   const comparatorName = columns[sortMode.column].comparator;
 
-  const sorderRows = useMemo(() => {
+  const sortedRows = useMemo(() => {
     if (!comparatorName) return rowsWithDistanceFilter;
 
     const rows = [...rowsWithDistanceFilter];
@@ -290,7 +290,7 @@ export const CitiesPage: FC<{ cities: City[]; provinces: Province[] }> = ({
                 )}
               </TableHead>
             }
-            rows={sorderRows}
+            rows={sortedRows}
             getRowKey={(city) => city.id}
             renderRow={(city) => (
               <>
